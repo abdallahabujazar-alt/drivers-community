@@ -261,6 +261,7 @@ export default function DashboardScreen() {
   const [isOnline, setIsOnline] = useState(true)
   const [activeTab, setActiveTab] = useState("home")
   const [elapsed, setElapsed] = useState(0)
+  const [currentTime, setCurrentTime] = useState<string | null>(null)
 
   const [trip, setTrip] = useState<TripData>({
     startTime: new Date(),
@@ -303,6 +304,21 @@ export default function DashboardScreen() {
     }
   }, [])
 
+  // Update current time on client only to avoid hydration mismatch
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(
+        new Date().toLocaleTimeString("sv-SE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      )
+    }
+    updateTime()
+    const interval = setInterval(updateTime, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   const handleStartTrip = useCallback(() => {
     setMode("KORNING")
     setElapsed(0)
@@ -327,10 +343,7 @@ export default function DashboardScreen() {
         <div className="flex items-center justify-between px-4 py-3 max-w-lg mx-auto">
           <SyncStatusBadge isOnline={isOnline} />
           <span className="text-sm font-mono text-muted-foreground">
-            {new Date().toLocaleTimeString("sv-SE", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {currentTime ?? "--:--"}
           </span>
         </div>
       </header>
