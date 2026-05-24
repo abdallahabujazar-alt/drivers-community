@@ -34,6 +34,16 @@ import {
   getDriverBadgeLabel,
 } from "@/components/korjournal/shared"
 
+// Comment type
+interface Comment {
+  id: string
+  postId: string
+  authorName: string
+  authorBadge: DriverBadgeType
+  content: string
+  createdAt: Date
+}
+
 // Mock data for demonstration
 const mockPosts: CommunityPost[] = [
   {
@@ -103,6 +113,56 @@ const mockAlerts: QuickAlert[] = [
     expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
   },
 ]
+
+// Mock comments data
+const mockComments: Record<string, Comment[]> = {
+  "1": [
+    {
+      id: "c1",
+      postId: "1",
+      authorName: "Erik L.",
+      authorBadge: "COMMUNITY_HELPER",
+      content: "Tack för tipset! Ska definitivt stanna där nästa gång.",
+      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    },
+    {
+      id: "c2",
+      postId: "1",
+      authorName: "Lisa A.",
+      authorBadge: "REST_CHAMPION",
+      content: "Finns det parkering för långtradare där?",
+      createdAt: new Date(Date.now() - 30 * 60 * 1000),
+    },
+  ],
+  "2": [
+    {
+      id: "c3",
+      postId: "2",
+      authorName: "Johan M.",
+      authorBadge: "ROAD_EXPERT",
+      content: "Grattis! Fortsätt så, det är viktigt att ta hand om sig.",
+      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    },
+  ],
+  "3": [
+    {
+      id: "c4",
+      postId: "3",
+      authorName: "Ahmed K.",
+      authorBadge: "ROAD_EXPERT",
+      content: "Bra gjort! Vi förare måste hjälpa varandra.",
+      createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    },
+    {
+      id: "c5",
+      postId: "3",
+      authorName: "Maria S.",
+      authorBadge: "COMMITTED_DRIVER",
+      content: "Du är en sann hjälte! Tack för att du delar.",
+      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    },
+  ],
+}
 
 function getAlertIcon(type: QuickAlert["type"]) {
   switch (type) {
@@ -248,17 +308,30 @@ function QuickAlertBar({ alerts }: { alerts: QuickAlert[] }) {
 function CommunityFeedCard({
   post,
   onLike,
+  comments,
+  onAddComment,
 }: {
   post: CommunityPost
   onLike: (postId: string) => void
+  comments: Comment[]
+  onAddComment: (postId: string, content: string) => void
 }) {
   const [isLiked, setIsLiked] = useState(post.isLiked || false)
   const [likes, setLikes] = useState(post.likes)
+  const [showComments, setShowComments] = useState(false)
+  const [newComment, setNewComment] = useState("")
 
   const handleLike = () => {
     setIsLiked(!isLiked)
     setLikes((prev) => (isLiked ? prev - 1 : prev + 1))
     onLike(post.id)
+  }
+
+  const handleSubmitComment = () => {
+    if (newComment.trim()) {
+      onAddComment(post.id, newComment.trim())
+      setNewComment("")
+    }
   }
 
   return (
@@ -296,11 +369,76 @@ function CommunityFeedCard({
             <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
             <span>{likes}</span>
           </button>
-          <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-2">
-            <MessageCircle className="w-5 h-5" />
-            <span>{post.comments}</span>
+          <button 
+            onClick={() => setShowComments(!showComments)}
+            className={`flex items-center gap-2 text-sm transition-colors min-h-[44px] px-2 ${
+              showComments ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageCircle className={`w-5 h-5 ${showComments ? "fill-current" : ""}`} />
+            <span>{comments.length}</span>
           </button>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="mt-4 pt-4 border-t border-border">
+            {/* Comments List */}
+            {comments.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-2">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-foreground text-xs font-semibold flex-shrink-0">
+                      {comment.authorName.charAt(0)}
+                    </div>
+                    <div className="flex-1 bg-secondary rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-foreground">
+                          {comment.authorName}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimeAgo(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground">{comment.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* New Comment Input */}
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary text-xs font-semibold flex-shrink-0">
+                A
+              </div>
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmitComment()
+                    }
+                  }}
+                  placeholder="Skriv en kommentar..."
+                  className="flex-1 bg-secondary rounded-full px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleSubmitComment}
+                  disabled={!newComment.trim()}
+                  className="h-9 w-9 rounded-full"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -372,6 +510,7 @@ function BottomNav({ activeTab }: { activeTab: string }) {
 
 export default function CommunityPage() {
   const [posts, setPosts] = useState<CommunityPost[]>(mockPosts)
+  const [comments, setComments] = useState<Record<string, Comment[]>>(mockComments)
   const [hasLoggedRest] = useState(true) // In real app, check from user data
 
   const handleLike = (postId: string) => {
@@ -386,6 +525,21 @@ export default function CommunityPage() {
           : post
       )
     )
+  }
+
+  const handleAddComment = (postId: string, content: string) => {
+    const newComment: Comment = {
+      id: `c${Date.now()}`,
+      postId,
+      authorName: "Ahmed K.",
+      authorBadge: "COMMITTED_DRIVER",
+      content,
+      createdAt: new Date(),
+    }
+    setComments((prev) => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment],
+    }))
   }
 
   return (
@@ -425,7 +579,13 @@ export default function CommunityPage() {
         {/* Community Feed */}
         <div className="space-y-4">
           {posts.map((post) => (
-            <CommunityFeedCard key={post.id} post={post} onLike={handleLike} />
+            <CommunityFeedCard 
+              key={post.id} 
+              post={post} 
+              onLike={handleLike}
+              comments={comments[post.id] || []}
+              onAddComment={handleAddComment}
+            />
           ))}
         </div>
 
