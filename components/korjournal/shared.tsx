@@ -166,3 +166,92 @@ export function getDriverBadgeLabel(badge: DriverBadgeType): string {
   }
   return labels[badge]
 }
+
+// ============ Social Features Types ============
+
+// Group Types
+export type GroupType = "COMPANY" | "REGION" | "PUBLIC" | "PRIVATE" | "CUSTOM"
+
+export interface Group {
+  id: string
+  name: string
+  description: string
+  type: GroupType
+  memberCount: number
+  createdAt: Date
+  createdBy: string
+  imageUrl?: string
+  isJoined?: boolean
+  isPending?: boolean
+  region?: string
+  companyName?: string
+}
+
+export interface GroupMember {
+  id: string
+  userId: string
+  userName: string
+  userBadge: DriverBadgeType
+  role: "ADMIN" | "MODERATOR" | "MEMBER"
+  joinedAt: Date
+}
+
+export interface GroupInvite {
+  id: string
+  groupId: string
+  groupName: string
+  invitedBy: string
+  invitedAt: Date
+  status: "PENDING" | "ACCEPTED" | "DECLINED"
+}
+
+// Friend Types
+export type FriendshipStatus = "NONE" | "PENDING_SENT" | "PENDING_RECEIVED" | "FRIENDS"
+
+export interface Friend {
+  id: string
+  name: string
+  badge: DriverBadgeType
+  status: "ONLINE" | "OFFLINE" | "DRIVING"
+  lastActive?: Date
+  mutualFriends?: number
+}
+
+export interface FriendRequest {
+  id: string
+  fromUserId: string
+  fromUserName: string
+  fromUserBadge: DriverBadgeType
+  toUserId: string
+  sentAt: Date
+  status: "PENDING" | "ACCEPTED" | "DECLINED"
+}
+
+// Extended Post type for group/friend filtering
+export interface ExtendedCommunityPost extends CommunityPost {
+  groupId?: string
+  groupName?: string
+  visibility: "PUBLIC" | "FRIENDS" | "GROUP"
+}
+
+// Helper functions
+export function getGroupTypeLabel(type: GroupType): string {
+  const labels: Record<GroupType, string> = {
+    COMPANY: "Företag",
+    REGION: "Region",
+    PUBLIC: "Offentlig",
+    PRIVATE: "Privat",
+    CUSTOM: "Anpassad",
+  }
+  return labels[type]
+}
+
+export function getFriendStatusLabel(status: FriendshipStatus): string {
+  const labels: Record<FriendshipStatus, string> = {
+    NONE: "Lägg till",
+    PENDING_SENT: "Väntar",
+    PENDING_RECEIVED: "Acceptera",
+    FRIENDS: "Vänner",
+  }
+  return labels[status]
+}
