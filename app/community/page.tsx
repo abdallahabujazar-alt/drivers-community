@@ -5,26 +5,22 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-  Heart,
-  MessageCircle,
   AlertTriangle,
-  MapPin,
-  Clock,
-  Trophy,
-  Star,
-  Shield,
-  Coffee,
-  CloudSun,
-  Construction,
   Car,
+  ChevronLeft,
   ChevronRight,
-  Send,
-  Book,
+  CloudRain,
+  Construction,
+  Heart,
   Home,
-  History,
-  Timer,
+  MapPin,
+  MessageCircle,
+  Send,
   Settings,
+  Star,
+  Timer,
   Users,
+  X,
 } from "lucide-react"
 import Link from "next/link"
 import {
@@ -512,6 +508,9 @@ export default function CommunityPage() {
   const [posts, setPosts] = useState<CommunityPost[]>(mockPosts)
   const [comments, setComments] = useState<Record<string, Comment[]>>(mockComments)
   const [hasLoggedRest] = useState(true) // In real app, check from user data
+  const [isComposerOpen, setIsComposerOpen] = useState(false)
+  const [newPostContent, setNewPostContent] = useState("")
+  const [newPostType, setNewPostType] = useState<"DIARY" | "STORY" | "TIP">("DIARY")
 
   const handleLike = (postId: string) => {
     setPosts((prev) =>
@@ -542,6 +541,28 @@ export default function CommunityPage() {
     }))
   }
 
+  const handleCreatePost = () => {
+    if (!newPostContent.trim()) return
+
+    const newPost: CommunityPost = {
+      id: `p${Date.now()}`,
+      authorId: "current-user",
+      authorName: "Ahmed K.",
+      authorBadge: "COMMITTED_DRIVER",
+      content: newPostContent.trim(),
+      type: newPostType,
+      likes: 0,
+      comments: 0,
+      createdAt: new Date(),
+      isLiked: false,
+    }
+
+    setPosts((prev) => [newPost, ...prev])
+    setComments((prev) => ({ ...prev, [newPost.id]: [] }))
+    setNewPostContent("")
+    setIsComposerOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -559,20 +580,106 @@ export default function CommunityPage() {
         {/* Welcome Card */}
         <WelcomeCard hasLoggedRest={hasLoggedRest} />
 
-        {/* Post Composer Button */}
+        {/* Post Composer */}
         <Card className="bg-card border-border">
           <CardContent className="p-4">
-            <button className="flex items-center gap-3 w-full text-left">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-foreground font-semibold">
-                A
+            {!isComposerOpen ? (
+              <button 
+                onClick={() => setIsComposerOpen(true)}
+                className="flex items-center gap-3 w-full text-left"
+              >
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-foreground font-semibold">
+                  A
+                </div>
+                <div className="flex-1 py-2.5 px-4 bg-secondary rounded-full text-muted-foreground text-sm">
+                  Dela något med andra förare...
+                </div>
+                <Button size="icon" variant="ghost" className="h-10 w-10">
+                  <Send className="w-5 h-5" />
+                </Button>
+              </button>
+            ) : (
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-foreground font-semibold">
+                      A
+                    </div>
+                    <div>
+                      <div className="font-medium text-foreground">Ahmed K.</div>
+                      <DriverBadge badge="COMMITTED_DRIVER" size="sm" />
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setIsComposerOpen(false)
+                      setNewPostContent("")
+                    }}
+                    className="text-muted-foreground hover:text-foreground p-2"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Post Type Selector */}
+                <div className="flex gap-2">
+                  {[
+                    { type: "DIARY" as const, label: "Dagbok" },
+                    { type: "STORY" as const, label: "Berättelse" },
+                    { type: "TIP" as const, label: "Tips" },
+                  ].map((item) => (
+                    <button
+                      key={item.type}
+                      onClick={() => setNewPostType(item.type)}
+                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                        newPostType === item.type
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Text Area */}
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  placeholder="Vad vill du dela med andra förare?"
+                  className="w-full min-h-[120px] bg-secondary rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none text-sm"
+                  autoFocus
+                />
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {newPostContent.length}/500
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setIsComposerOpen(false)
+                        setNewPostContent("")
+                      }}
+                      className="h-10"
+                    >
+                      Avbryt
+                    </Button>
+                    <Button
+                      onClick={handleCreatePost}
+                      disabled={!newPostContent.trim()}
+                      className="h-10 gap-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      Publicera
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 py-2.5 px-4 bg-secondary rounded-full text-muted-foreground text-sm">
-                Dela något med andra förare...
-              </div>
-              <Button size="icon" variant="ghost" className="h-10 w-10">
-                <Send className="w-5 h-5" />
-              </Button>
-            </button>
+            )}
           </CardContent>
         </Card>
 
