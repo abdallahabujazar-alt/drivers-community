@@ -221,40 +221,56 @@ function TodaySummary({
 function BottomNav({
   activeTab,
   onTabChange,
-}: {
+  }: {
   activeTab: string
   onTabChange: (tab: string) => void
-}) {
-  const tabs = [
-    { id: "home", label: "Hem", icon: Home },
-    { id: "history", label: "Resor", icon: History },
-    { id: "rest", label: "Vila", icon: Timer },
-    { id: "settings", label: "Inst.", icon: Settings },
+  }) {
+  const navItems = [
+    { id: "home", label: "Hem", icon: Home, href: null },
+    { id: "history", label: "Resor", icon: History, href: "/rest-history" },
+    { id: "community", label: "Community", icon: Users, href: "/community" },
+    { id: "settings", label: "Inst.", icon: Settings, href: "/settings" },
   ]
-
+  
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border pb-safe">
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col items-center justify-center w-16 h-full min-h-[48px] transition-colors ${
-                isActive ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-xs mt-1">{tab.label}</span>
-            </button>
-          )
-        })}
-      </div>
-    </nav>
+  <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border pb-safe">
+  <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+  {navItems.map((item) => {
+  const Icon = item.icon
+  const isActive = activeTab === item.id
+  
+  if (item.href) {
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        className={`flex flex-col items-center justify-center w-16 h-full min-h-[48px] transition-colors ${
+          isActive ? "text-primary" : "text-muted-foreground"
+        }`}
+      >
+        <Icon className="w-5 h-5" />
+        <span className="text-xs mt-1">{item.label}</span>
+      </Link>
+    )
+  }
+  
+  return (
+  <button
+  key={item.id}
+  onClick={() => onTabChange(item.id)}
+  className={`flex flex-col items-center justify-center w-16 h-full min-h-[48px] transition-colors ${
+  isActive ? "text-primary" : "text-muted-foreground"
+  }`}
+  >
+  <Icon className="w-5 h-5" />
+  <span className="text-xs mt-1">{item.label}</span>
+  </button>
   )
-}
+  })}
+  </div>
+  </nav>
+  )
+  }
 
 export default function DashboardScreen() {
   const [mode, setMode] = useState<WorkMode>("REDO")
