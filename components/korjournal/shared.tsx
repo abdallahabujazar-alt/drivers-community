@@ -115,3 +115,54 @@ export function generateHash(): string {
   }
   return hash
 }
+
+// Community Types
+export type DriverBadgeType = 
+  | "COMMITTED_DRIVER" 
+  | "ROAD_EXPERT" 
+  | "COMMUNITY_HELPER" 
+  | "REST_CHAMPION"
+  | "NEWCOMER"
+
+export interface CommunityPost {
+  id: string
+  authorId: string
+  authorName: string
+  authorBadge: DriverBadgeType
+  content: string
+  type: "DIARY" | "STORY" | "TIP"
+  likes: number
+  comments: number
+  createdAt: Date
+  isLiked?: boolean
+}
+
+export interface QuickAlert {
+  id: string
+  authorName: string
+  message: string
+  location: string
+  type: "TRAFFIC" | "REST_AREA" | "WEATHER" | "ROAD_WORK"
+  createdAt: Date
+  expiresAt: Date
+}
+
+export interface DriverProfile {
+  id: string
+  name: string
+  badge: DriverBadgeType
+  points: number
+  totalRestHours: number
+  joinedAt: Date
+}
+
+export function getDriverBadgeLabel(badge: DriverBadgeType): string {
+  const labels: Record<DriverBadgeType, string> = {
+    COMMITTED_DRIVER: "Självkörande",
+    ROAD_EXPERT: "Vägexpert",
+    COMMUNITY_HELPER: "Hjälpsam",
+    REST_CHAMPION: "Vilomästare",
+    NEWCOMER: "Nykomling",
+  }
+  return labels[badge]
+}
